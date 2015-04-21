@@ -1,6 +1,12 @@
 <?php
 
-abstract class PimcoreCdn_Config extends Pimcore_API_Plugin_Abstract implements Pimcore_API_Plugin_Interface {
+namespace PimcoreCdn;
+
+use Pimcore\Config as PimcoreConfig;
+use Pimcore\API\Plugin as PluginLib;
+use Pimcore\Model\Cache as PimcoreCache;
+
+abstract class Config extends PluginLib\AbstractPlugin implements PluginLib\PluginInterface {
 	protected static function getWebsiteConfigPath(){
         return PIMCORE_CONFIGURATION_DIRECTORY . '/website.xml';
     }
@@ -10,9 +16,9 @@ abstract class PimcoreCdn_Config extends Pimcore_API_Plugin_Abstract implements 
 	}
 
 	protected static function saveConfig($data) {
-        if (class_exists('WebsiteSetting')) {
+        if (class_exists('\\WebsiteSetting')) {
             foreach ($data as $key => $entry) {
-                $new = new WebsiteSetting();
+                $new = new \WebsiteSetting();
 
                 $new->setName($key);
                 $new->setType($entry['type']);
@@ -22,8 +28,8 @@ abstract class PimcoreCdn_Config extends Pimcore_API_Plugin_Abstract implements 
                 $new->save();
             }
         } else {
-            $config = new Zend_Config($data, true);
-            $writer = new Zend_Config_Writer_Xml(array(
+            $config = new \Zend_Config($data, true);
+            $writer = new \Zend_Config_Writer_Xml(array(
                 "config" => $config,
                 "filename" => self::getWebsiteConfigPath()
             ));
@@ -38,7 +44,7 @@ abstract class PimcoreCdn_Config extends Pimcore_API_Plugin_Abstract implements 
             return array();
         }
 
-        $rawConfig = new Zend_Config_Xml($configFile);
+        $rawConfig = new \Zend_Config_Xml($configFile);
 
         return $rawConfig->toArray();
     }
@@ -60,34 +66,34 @@ abstract class PimcoreCdn_Config extends Pimcore_API_Plugin_Abstract implements 
 
 		//we need to write the website settings to the XML file manually because currently Pimcore has no API for this!
         try {
-        	$websiteData = Pimcore_Config::getWebsiteConfig();
+        	$websiteData = PimcoreConfig::getWebsiteConfig();
         	$pluginData = self::loadFileConfig(self::getSettingsConfigPath());
         	$diff = self::diff($pluginData,$websiteData->toArray());
 
 	        foreach($diff as $key => $value) {
 	        	$data[$key] = $value;
 	    	}
-        } catch(Exception $e) {
+        } catch(\Exception $e) {
         	$data = self::loadFileConfig(self::getSettingsConfigPath());
         }
 
         self::saveConfig($data);
 
         //remove old settings from cache, forces a reload from the file system
-        Pimcore_Model_Cache::clearTags(array('output', 'system', 'website_config'));
+        PimcoreCache::clearTags(array('output', 'system', 'website_config'));
     }
 
 	public static function isInstalled() {
 		// if this plugin exists it is installed? hopefully?
 		try {
-        	$websiteData = Pimcore_Config::getWebsiteConfig();
+        	$websiteData = PimcoreConfig::getWebsiteConfig();
         	$pluginData = self::loadFileConfig(self::getSettingsConfigPath());
         	$diff = self::diff($pluginData,$websiteData->toArray());
 
         	if (!empty($diff)) {
         		return false;
         	}
-        } catch(Exception $e) {
+        } catch(\Exception $e) {
         	return false;
         }
 
@@ -105,7 +111,7 @@ abstract class PimcoreCdn_Config extends Pimcore_API_Plugin_Abstract implements 
 	}
 
 	public function updateConfiguration(){
-		$config = Pimcore_Config::getWebsiteConfig();
+		$config = PimcoreConfig::getWebsiteConfig();
         $this->setConfiguration($config->toArray());
 	}
 

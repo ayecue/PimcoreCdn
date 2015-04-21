@@ -1,10 +1,16 @@
 <?php
 
-class PimcoreCdn_Controller_Plugin_CDN extends Pimcore_Controller_Plugin_CDN {
+namespace PimcoreCdn\Controller\Plugin;
+
+use Pimcore\Controller as PimcoreController;
+use Pimcore\Model\Cache as PimcoreModelCache;
+use Pimcore\Tool as PimcoreTool;
+
+class CDN extends PimcoreController\Plugin\CDN {
 
     public function dispatchLoopShutdown() {
         
-        if(!Pimcore_Tool::isHtmlResponse($this->getResponse())) {
+        if(!PimcoreTool::isHtmlResponse($this->getResponse())) {
             return;
         }
         
@@ -48,7 +54,7 @@ class PimcoreCdn_Controller_Plugin_CDN extends Pimcore_Controller_Plugin_CDN {
                 $this->getResponse()->setBody($body);
 
                 // save storage
-                Pimcore_Model_Cache::save($this->cachedItems, self::cacheKey, array(), 3600);
+                PimcoreModelCache::save($this->cachedItems, self::cacheKey, array(), 3600);
             }
         }
     }

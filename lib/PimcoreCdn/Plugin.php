@@ -1,6 +1,12 @@
 <?php
 
-class PimcoreCdn_Plugin extends PimcoreCdn_Config {
+namespace PimcoreCdn;
+
+use Pimcore\Tool as PimcoreTool;
+use PimcoreCdn\Config as CdnConfig;
+use PimcoreCdn\Controller\Plugin\CDN as CdnPlugin;
+
+class Plugin extends CdnConfig {
     const PLUGIN_STACK_INDEX = 1001;
 
     public static function install() {
@@ -19,9 +25,9 @@ class PimcoreCdn_Plugin extends PimcoreCdn_Config {
 		$configuration = $this->getConfiguration();
 
 	 	// Pimcore CDN is not enabled by default in Pimcore.php                  
-		if(!isset($_SERVER['HTTP_SECURE']) && Pimcore_Tool::isFrontend() && ! Pimcore_Tool::isFrontentRequestByAdmin()){
+		if(!isset($_SERVER['HTTP_SECURE']) && PimcoreTool::isFrontend() && ! PimcoreTool::isFrontentRequestByAdmin()){
 			//die('Ende');
-			$cdn = new PimcoreCdn_Controller_Plugin_CDN();
+			$cdn = new CdnPlugin();
             // replace example urls by real domains offered from your cdn provider
 			$cdn->setCdnhostnames(array(
                 $configuration->cdnDomain
@@ -37,7 +43,7 @@ class PimcoreCdn_Plugin extends PimcoreCdn_Config {
                 "/(" . implode("|",$folders) . ")\/.+\.(" . implode("|",$extensions) . ")(\?[^\?]*)?$/i"
             ));
             // 805 means trigger this plugin later than other plugins (with lower numbers)
-			$instance = Zend_Controller_Front::getInstance();
+			$instance = \Zend_Controller_Front::getInstance();
 
 			$instance->registerPlugin($cdn,self::PLUGIN_STACK_INDEX);
 		}
