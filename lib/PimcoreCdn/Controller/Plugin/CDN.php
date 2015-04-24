@@ -43,6 +43,10 @@ class CDN extends PimcoreController\Plugin\CDN {
                         if($this->pathMatch($element->src)) {
                             $element->src = $this->rewritePath($element->src);
                         }
+
+                        if($this->pathMatch($element->srcset)) {
+                            $element->srcset = $this->rewritePath($element->srcset);
+                        }
                     }
                 }
 
